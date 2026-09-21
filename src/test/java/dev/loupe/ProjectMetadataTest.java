@@ -41,7 +41,7 @@ class ProjectMetadataTest {
         assertEquals("dev.loupe.client.LoupeClient", entrypoints.getAsJsonArray("client").get(0).getAsString());
 
         JsonObject depends = mod.getAsJsonObject("depends");
-        assertTrue(depends.has("fabric-key-mapping-api-v1"));
+        assertTrue(depends.has("fabric-key-mapping-api-v1") || depends.has("fabric-key-binding-api-v1"));
         assertFalse(depends.has("modmenu"), "Mod Menu must stay optional");
         assertTrue(mod.getAsJsonObject("suggests").has("modmenu"));
     }

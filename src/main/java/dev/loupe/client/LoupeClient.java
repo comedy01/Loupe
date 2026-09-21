@@ -3,10 +3,8 @@ package dev.loupe.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.loupe.config.ZoomConfig;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.resources.Identifier;
 
 import java.nio.file.Path;
 
@@ -20,11 +18,8 @@ public final class LoupeClient implements ClientModInitializer {
     public void onInitializeClient() {
         config = ZoomConfig.load(configPath());
 
-        KeyMapping.Category category =
-                KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
-
-        int defaultKey = InputConstants.getKey("key.keyboard.c").getValue();
-        zoomKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.loupe.zoom", defaultKey, category));
+        int defaultKey = InputConstants.getKey(DefaultKey.NAME).getValue();
+        zoomKey = KeyRegistrar.register(KeyFactory.create("key.loupe.zoom", defaultKey));
     }
 
     public static ZoomConfig config() {

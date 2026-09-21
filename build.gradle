@@ -1,11 +1,24 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
 }
 
-def parts = project.minecraft_version.tokenize('.')
-def label = "${parts[0]}.${parts[1]}"
-def era = label == "26.1" ? "26.1" : "26.2"
-def minecraftRange = ">=${label} <${parts[0]}.${parts[1].toInteger() + 1}"
+def minecraftVersion = project.minecraft_version
+def remap = minecraftVersion.startsWith("1.")
+
+def versionProps = new Properties()
+file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
+
+def packs = versionProps.getProperty("packs").split(",")
+def label = versionProps.getProperty("label")
+def minecraftRange = versionProps.getProperty("range")
+def keyModule = versionProps.getProperty("key_module")
+def javaVersion = versionProps.getProperty("java").toInteger()
+def fabricApiVersion = versionProps.getProperty("fabric_api_version")
+def modmenuVersion = versionProps.getProperty("modmenu_version")
+def gametest = versionProps.getProperty("gametest", "true") == "true"
+
+apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
 
 version = "${project.mod_version}+mc${label}"
 group = project.maven_group
@@ -14,10 +27,14 @@ base {
 	archivesName = project.archives_base_name
 }
 
-sourceSets.main.java.srcDir "src/eras/${era}/java"
+packs.each { pack ->
+	sourceSets.main.java.srcDir "src/compat/${pack}/java"
+}
 sourceSets.configureEach {
-	if (it.name == "gametest") {
-		it.java.srcDir "src/eras/${era}/gametest/java"
+	if (gametest && it.name == "gametest") {
+		packs.each { pack ->
+			it.java.srcDir "src/compat/${pack}/gametest/java"
+		}
 	}
 }
 
@@ -29,12 +46,18 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft "com.mojang:minecraft:${minecraftVersion}"
 
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
-	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	if (remap) {
+		mappings loom.officialMojangMappings()
+		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+		modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+		modCompileOnly "com.terraformersmc:modmenu:${modmenuVersion}"
+	} else {
+		implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+		implementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+		compileOnly "com.terraformersmc:modmenu:${modmenuVersion}"
+	}
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -48,25 +71,26 @@ processResources {
 	def version = project.version
 	inputs.property "version", version
 	inputs.property "minecraftRange", minecraftRange
+	inputs.property "keyModule", keyModule
 
-	filesMatching("fabric.mod.json") {
-		expand "version": version, "minecraft_range": minecraftRange
+	filesMatching(["fabric.mod.json", "loupe.mixins.json"]) {
+		expand "version": version, "minecraft_range": minecraftRange, "key_module": keyModule, "java_version": javaVersion
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	it.options.release = javaVersion
 	it.options.encoding = 'UTF-8'
 }
 
 java {
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.toVersion(javaVersion)
+	targetCompatibility = JavaVersion.toVersion(javaVersion)
 
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(25)
+		languageVersion = JavaLanguageVersion.of(javaVersion)
 	}
 }
 
@@ -78,11 +102,13 @@ jar {
 	}
 }
 
-fabricApi {
-	configureTests {
-		createSourceSet = true
-		modId = "loupe-test"
-		enableGameTests = false
-		enableClientGameTests = true
+if (gametest) {
+	fabricApi {
+		configureTests {
+			createSourceSet = true
+			modId = "loupe-test"
+			enableGameTests = false
+			enableClientGameTests = true
+		}
 	}
 }

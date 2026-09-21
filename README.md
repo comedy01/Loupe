@@ -4,6 +4,8 @@ Hold a key to zoom in, scroll to zoom in or out, and let go to ease back out. Th
 
 Loupe is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
 
+Supported versions: 1.21 to 1.21.11 and 26.1 to 26.3.
+
 ## Features
 
 - **Smooth zoom** - the view eases in when you press the key and eases out when you let go. It takes the same time at any frame rate.
@@ -16,8 +18,8 @@ Loupe is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
 
 ## Install
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 26.2.
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Loupe jar in your `mods` folder.
+1. Install [Fabric Loader](https://fabricmc.net/use/) for your version of Minecraft.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Loupe jar for your version in your `mods` folder.
 3. Start the game.
 
 Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings screen (*Mods > Loupe > Configure*).
@@ -25,6 +27,8 @@ Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings scr
 ## How to use
 
 Hold **C** while playing to zoom in. Scroll up to zoom closer, scroll down to zoom out, and release to go back to normal.
+
+On Minecraft 1.21 to 1.21.8 the default key is **Z** instead, because C is already used by the creative toolbar there.
 
 To change the key, go to *Options > Controls > Key Binds > Loupe*. You can pick any keyboard key or mouse button. Unbind it to turn zooming off.
 

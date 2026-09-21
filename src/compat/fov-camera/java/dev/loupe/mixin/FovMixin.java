@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Camera.class)
-abstract class CameraZoomMixin {
+abstract class FovMixin {
     @Inject(method = "calculateFov", at = @At("RETURN"), cancellable = true)
     private void loupe$applyZoom(float partialTicks, CallbackInfoReturnable<Float> cir) {
         cir.setReturnValue(LoupeRuntime.modifyFov(cir.getReturnValueF()));
