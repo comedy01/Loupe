@@ -5,11 +5,9 @@ import dev.loupe.config.ZoomConfig;
 public final class ZoomController {
     private static final double FIRST_DT = 1.0 / 60.0;
 
-    // 0 = zoomed out, 1 = zoomed in
     private double progress;
     private long lastNanos;
     private boolean started;
-    // set by the wheel while the key is held, 0 means use the configured amount
     private double targetAmount;
     private double currentAmount;
     private double magnification = 1.0;
@@ -34,7 +32,6 @@ public final class ZoomController {
         progress = ZoomMath.advanceProgress(progress, held, speed, dt);
 
         if (!held && progress <= 0.0) {
-            // fully out, the next press starts from the configured amount again
             targetAmount = 0.0;
             currentAmount = 0.0;
         } else if (currentAmount > 0.0) {

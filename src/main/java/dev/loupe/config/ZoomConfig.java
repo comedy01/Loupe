@@ -95,7 +95,6 @@ public final class ZoomConfig {
             loaded.sanitize();
             return loaded;
         } catch (IOException | RuntimeException e) {
-            // gson throws several unrelated exception types on bad content
             LOGGER.warn("Could not read {}; using defaults. {}", file, e.toString());
             moveAside(file);
             ZoomConfig fresh = new ZoomConfig();

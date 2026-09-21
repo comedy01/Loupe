@@ -69,7 +69,7 @@ public final class LoupeRuntime {
         KeyMapping key = LoupeClient.zoomKey();
 
         boolean inWorld = client.level != null && client.player != null && client.getWindow() != null;
-        boolean screenOpen = client.gui != null && client.gui.screen() != null;
+        boolean screenOpen = GameScreens.current(client) != null;
         boolean keyBound = key != null && !key.isUnbound();
 
         return ZoomMath.canZoom(inWorld, screenOpen, keyBound) && key.isDown();

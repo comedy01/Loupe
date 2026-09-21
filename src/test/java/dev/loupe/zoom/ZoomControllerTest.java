@@ -258,7 +258,6 @@ class ZoomControllerTest {
             long t = 42L;
             long step = 1_000_000_000L / fps;
             int frames = fps / 2;
-            // the first frame uses a nominal 1/60 s step, so prime the clock first
             c.modifyFov(VANILLA_FOV, false, config, t);
             for (int i = 0; i < frames; i++) {
                 t += step;

@@ -1,6 +1,7 @@
 package dev.loupe.gametest;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.loupe.client.GameScreens;
 import dev.loupe.client.LoupeClient;
 import dev.loupe.client.gui.LoupeSettingsScreen;
 import dev.loupe.config.ZoomConfig;
@@ -17,14 +18,12 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.Mth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.nio.file.Files;
 
 public class LoupeClientGameTest implements FabricClientGameTest {
     private static final float STEP = (float) ZoomMath.SCROLL_STEP;
-    // Fully zoomed out means progress is exactly 0, which yields the vanilla FOV bit for bit.
     private static final float EXACT = 1.0e-6F;
 
     @Override
@@ -45,16 +44,13 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         log("baseline FOV = " + base);
         check(base > 30.0F && base < 120.0F, "unexpected baseline FOV " + base);
 
-        // idle: nothing changes
         context.waitTicks(10);
         checkNear(fov(context), base, 0.001F, "FOV changed with the key up");
 
-        // hold the key: eases in to the configured amount
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         int ticks = waitForFov(context, base / 4.0F, 0.05F, "zoom in to 4x");
         log("zoomed in to " + fov(context) + " (target " + base / 4.0F + ") after " + ticks + " ticks");
 
-        // scroll up zooms in further and does NOT scroll the hotbar
         int slot = slot(context);
         for (int i = 0; i < 3; i++) {
             input.scroll(1.0);
@@ -64,7 +60,6 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         check(slot(context) == slot, "hotbar scrolled while zooming (slot " + slot + " -> " + slot(context) + ")");
         log("scroll up x3 -> " + fov(context) + ", hotbar slot unchanged at " + slot);
 
-        // scroll down zooms back out
         for (int i = 0; i < 3; i++) {
             input.scroll(-1.0);
             context.waitTick();
@@ -76,12 +71,10 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         log("scroll down -> " + fov(context) + ", hotbar slot " + slot(context));
         check(slot(context) == slot, "hotbar scrolled while zooming out");
 
-        // release: eases all the way back to the vanilla FOV
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         waitForFov(context, base, EXACT, "zoom out on release");
         log("released -> " + fov(context));
 
-        // wheel is untouched while the key is up: hotbar changes as normal
         input.scroll(1.0);
         context.waitTicks(2);
         check(slot(context) != slot, "the wheel did not scroll the hotbar with the zoom key up");
@@ -90,25 +83,23 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         context.waitTicks(2);
         check(slot(context) == slot, "could not restore the hotbar slot");
 
-        // a scrolled amount does not stick: the next zoom starts at the configured amount
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         waitForFov(context, base / 4.0F, 0.05F, "zoom in before scrolling");
         for (int i = 0; i < 4; i++) {
             input.scroll(1.0);
             context.waitTick();
         }
         waitForFov(context, base / (4.0F * (float) Math.pow(ZoomMath.SCROLL_STEP, 4.0)), 0.05F, "scrolled in");
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         waitForFov(context, base, EXACT, "zoom out after scrolling");
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         waitForFov(context, base / 4.0F, 0.05F, "second zoom starts at the configured amount");
         log("second press returned to configured amount: " + fov(context));
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         waitForFov(context, base, EXACT, "release");
 
-        // scroll to zoom off: the wheel goes to the hotbar, zoom amount stays fixed
         config.setScrollToZoom(false);
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         waitForFov(context, base / 4.0F, 0.05F, "zoom in, scroll disabled");
         input.scroll(1.0);
         context.waitTicks(3);
@@ -117,64 +108,57 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         log("scroll-to-zoom off: wheel reached the hotbar, FOV stayed " + fov(context));
         input.scroll(-1.0);
         context.waitTicks(2);
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         waitForFov(context, base, EXACT, "release");
         config.setScrollToZoom(true);
 
-        // configured amount is honoured
         config.setZoomAmount(2.0);
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         waitForFov(context, base / 2.0F, 0.05F, "2x amount");
         log("amount 2.0 -> " + fov(context));
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         waitForFov(context, base, EXACT, "release");
         config.resetToDefaults();
 
-        // no zoom while a screen is open
         context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));
         context.waitTicks(5);
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         context.waitTicks(30);
         checkNear(fov(context), base, 0.001F, "zoomed behind an open inventory");
         log("inventory open, C held -> FOV " + fov(context) + " (no zoom)");
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         context.setScreen(() -> null);
         context.waitTicks(5);
 
-        // unbound key does nothing
         KeyMapping key = LoupeClient.zoomKey();
         check(key != null, "zoom key was not registered");
         rebind(context, key, InputConstants.UNKNOWN);
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         context.waitTicks(30);
         checkNear(fov(context), base, 0.001F, "zoomed although the key is unbound");
         log("key unbound, C held -> FOV " + fov(context) + " (no zoom)");
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
 
-        // a mouse button can be the zoom key
-        rebind(context, key, InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_MIDDLE));
-        input.holdMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE);
+        rebind(context, key, InputConstants.getKey("key.mouse.middle"));
+        input.holdMouse(code("key.mouse.middle"));
         waitForFov(context, base / 4.0F, 0.05F, "zoom on a mouse button");
         log("bound to middle mouse -> FOV " + fov(context));
-        input.releaseMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE);
+        input.releaseMouse(code("key.mouse.middle"));
         waitForFov(context, base, EXACT, "release mouse button");
 
-        // another keyboard key works too, and the old one no longer does
-        rebind(context, key, InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_V));
-        input.holdKey(GLFW.GLFW_KEY_C);
+        rebind(context, key, InputConstants.getKey("key.keyboard.v"));
+        input.holdKey(code("key.keyboard.c"));
         context.waitTicks(20);
         checkNear(fov(context), base, 0.001F, "old key still zooms after rebinding");
-        input.releaseKey(GLFW.GLFW_KEY_C);
-        input.holdKey(GLFW.GLFW_KEY_V);
+        input.releaseKey(code("key.keyboard.c"));
+        input.holdKey(code("key.keyboard.v"));
         waitForFov(context, base / 4.0F, 0.05F, "zoom on rebound key V");
         log("rebound to V -> FOV " + fov(context) + ", C no longer zooms");
-        input.releaseKey(GLFW.GLFW_KEY_V);
+        input.releaseKey(code("key.keyboard.v"));
         waitForFov(context, base, EXACT, "release V");
         rebind(context, key, key.getDefaultKey());
-        check(key.getDefaultKey().getValue() == GLFW.GLFW_KEY_C, "default key is not C");
+        check(key.getDefaultKey().getValue() == code("key.keyboard.c"), "default key is not C");
 
-        // mouse look: direct when not zoomed, eased while zoomed
-        // Minecraft ignores the first mouse move after it grabs the cursor, so make that one now.
         input.moveCursor(1.0, 0.0);
         context.waitTicks(3);
         float[] direct = sweep(context, 200.0, 30);
@@ -184,7 +168,7 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         check(Math.abs(direct[0]) >= 0.9F * directTotal, "look was eased although not zoomed: " + describe(direct));
         sweep(context, -200.0, 10);
 
-        input.holdKey(GLFW.GLFW_KEY_C);
+        input.holdKey(code("key.keyboard.c"));
         waitForFov(context, base / 4.0F, 0.05F, "zoom in for look smoothing");
         float[] eased = sweep(context, 200.0, 40);
         log("look sweep, zoomed 4x: " + describe(eased));
@@ -201,10 +185,9 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         log("look sweep, zoomed with smoothing off: " + describe(off));
         config.resetToDefaults();
         sweep(context, -200.0, 10);
-        input.releaseKey(GLFW.GLFW_KEY_C);
+        input.releaseKey(code("key.keyboard.c"));
         waitForFov(context, base, EXACT, "release after look smoothing");
 
-        // settings screen
         config.setZoomAmount(9.0);
         config.setZoomSpeed(3.0);
         config.setScrollToZoom(false);
@@ -219,7 +202,6 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         check(config.scrollToZoom(), "reset did not restore scroll-to-zoom");
         log("screenshot: " + context.takeScreenshot("loupe-settings-after-reset"));
 
-        // Closing the screen writes the settings to disk.
         config.setZoomAmount(6.5);
         context.setScreen(() -> null);
         context.waitTicks(5);
@@ -230,9 +212,8 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         LoupeClient.saveConfig();
     }
 
-
     private static float fov(ClientGameTestContext context) {
-        return context.computeOnClient(client -> client.gameRenderer.mainCamera().getFov());
+        return context.computeOnClient(client -> CameraAccess.fov(client));
     }
 
     private static float yaw(ClientGameTestContext context) {
@@ -267,12 +248,16 @@ public class LoupeClientGameTest implements FabricClientGameTest {
     private static int waitForFov(ClientGameTestContext context, float target, float tolerance, String what) {
         try {
             return context.waitFor(
-                    client -> Math.abs(client.gameRenderer.mainCamera().getFov() - target) <= tolerance,
+                    client -> Math.abs(CameraAccess.fov(client) - target) <= tolerance,
                     400);
         } catch (RuntimeException | AssertionError e) {
             throw new AssertionError("FOV never reached " + target + " (+/- " + tolerance + ") for: " + what
                     + "; it is " + fov(context), e);
         }
+    }
+
+    private static int code(String name) {
+        return InputConstants.getKey(name).getValue();
     }
 
     private static void rebind(ClientGameTestContext context, KeyMapping key, InputConstants.Key to) {
@@ -282,10 +267,9 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         });
     }
 
-    // real click, the button can be nested in a scrolling list
     private static void clickButton(ClientGameTestContext context, String translationKey) {
         double[] center = context.computeOnClient(client -> {
-            Button button = findButton(client.gui.screen(), translationKey);
+            Button button = findButton(GameScreens.current(client), translationKey);
             if (button == null) {
                 throw new AssertionError("no button '" + translationKey + "' on the current screen");
             }
@@ -296,7 +280,7 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(center[0], center[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(code("key.mouse.left"));
     }
 
     private static Button findButton(GuiEventListener node, String translationKey) {

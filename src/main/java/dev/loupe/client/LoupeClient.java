@@ -23,12 +23,8 @@ public final class LoupeClient implements ClientModInitializer {
         KeyMapping.Category category =
                 KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
 
-        zoomKey = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.loupe.zoom",
-                        InputConstants.Type.KEYSYM,
-                        InputConstants.KEY_C,
-                        category));
+        int defaultKey = InputConstants.getKey("key.keyboard.c").getValue();
+        zoomKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.loupe.zoom", defaultKey, category));
     }
 
     public static ZoomConfig config() {

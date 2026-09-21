@@ -75,13 +75,12 @@ class ProjectMetadataTest {
 
     @Test
     void noOtherProjectReferences() throws IOException {
-        // built from pieces so this file does not trip its own scan
         String[] forbidden = {"rot" + "client", "rot-" + "client", "rot " + "client", "rot" + "tools", "fi." + "rot"};
         try (Stream<Path> files = Stream.of(Path.of("src/main"), Path.of("build.gradle"), Path.of("gradle.properties"),
                         Path.of("settings.gradle"), Path.of("README.md"), Path.of("LICENSE"), Path.of("docs"))
                 .filter(Files::exists)
                 .flatMap(ProjectMetadataTest::walk)) {
-            files.filter(Files::isRegularFile).filter(file -> !file.toString().endsWith(".png")).forEach(file -> {
+            files.filter(Files::isRegularFile).filter(file -> !file.toString().endsWith(".png") && !file.toString().endsWith(".jar")).forEach(file -> {
                 String text;
                 try {
                     text = Files.readString(file, StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);
