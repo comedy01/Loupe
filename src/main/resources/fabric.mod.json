@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "smoothzoom",
+	"version": "${version}",
+	"name": "Smooth Zoom",
+	"description": "Hold a key to zoom in with a smooth animation, and scroll the mouse wheel to adjust the magnification. Client-side only.",
+	"authors": [
+		"comedy01"
+	],
+	"license": "MIT",
+	"contact": {
+		"homepage": "https://github.com/comedy01/Smooth-Zoom",
+		"sources": "https://github.com/comedy01/Smooth-Zoom",
+		"issues": "https://github.com/comedy01/Smooth-Zoom/issues"
+	},
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.smoothzoom.client.SmoothZoomClient"
+		],
+		"modmenu": [
+			"dev.smoothzoom.compat.SmoothZoomModMenu"
+		]
+	},
+	"mixins": [
+		"smoothzoom.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-key-mapping-api-v1": "*"
+	},
+	"suggests": {
+		"modmenu": "*"
+	}
+}
