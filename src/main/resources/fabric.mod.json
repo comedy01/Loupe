@@ -4,6 +4,7 @@
 	"version": "${version}",
 	"name": "Smooth Zoom",
 	"description": "Hold a key to zoom in with a smooth animation, and scroll the mouse wheel to adjust the magnification. Client-side only.",
+	"icon": "assets/smoothzoom/icon.png",
 	"authors": [
 		"comedy01"
 	],
