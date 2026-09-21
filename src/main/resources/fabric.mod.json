@@ -1,30 +1,30 @@
 {
 	"schemaVersion": 1,
-	"id": "smoothzoom",
+	"id": "loupe",
 	"version": "${version}",
-	"name": "Smooth Zoom",
+	"name": "Loupe",
 	"description": "Hold a key to zoom in with a smooth animation, and scroll the mouse wheel to adjust the magnification. Client-side only.",
-	"icon": "assets/smoothzoom/icon.png",
+	"icon": "assets/loupe/icon.png",
 	"authors": [
 		"comedy01"
 	],
 	"license": "MIT",
 	"contact": {
-		"homepage": "https://github.com/comedy01/Smooth-Zoom",
-		"sources": "https://github.com/comedy01/Smooth-Zoom",
-		"issues": "https://github.com/comedy01/Smooth-Zoom/issues"
+		"homepage": "https://github.com/comedy01/Loupe",
+		"sources": "https://github.com/comedy01/Loupe",
+		"issues": "https://github.com/comedy01/Loupe/issues"
 	},
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"dev.smoothzoom.client.SmoothZoomClient"
+			"dev.loupe.client.LoupeClient"
 		],
 		"modmenu": [
-			"dev.smoothzoom.compat.SmoothZoomModMenu"
+			"dev.loupe.compat.LoupeModMenu"
 		]
 	},
 	"mixins": [
-		"smoothzoom.mixins.json"
+		"loupe.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",

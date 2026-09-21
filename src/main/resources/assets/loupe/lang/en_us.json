@@ -1,0 +1,17 @@
+{
+  "key.category.loupe.main": "Loupe",
+  "key.loupe.zoom": "Zoom",
+
+  "loupe.options.title": "Loupe",
+  "loupe.options.amount": "Zoom Amount",
+  "loupe.options.amount.tooltip": "How much the view is magnified while the zoom key is held.",
+  "loupe.options.speed": "Animation Speed",
+  "loupe.options.speed.tooltip": "How quickly the zoom eases in and out. Higher is snappier.",
+  "loupe.options.look": "Look Smoothing",
+  "loupe.options.look.tooltip": "While zoomed, moving the mouse builds up speed gradually and glides to a stop instead of following instantly. Stronger the more you zoom in. Off follows the mouse directly.",
+  "loupe.options.scroll": "Scroll to Zoom",
+  "loupe.options.scroll.tooltip": "While the zoom key is held, the mouse wheel changes the magnification instead of the hotbar slot.",
+  "loupe.options.key": "Zoom Key: %s",
+  "loupe.options.key.unavailable": "Zoom Key (see Controls)",
+  "loupe.options.reset": "Reset to Defaults"
+}

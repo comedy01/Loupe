@@ -74,7 +74,7 @@ jar {
 fabricApi {
 	configureTests {
 		createSourceSet = true
-		modId = "smoothzoom-test"
+		modId = "loupe-test"
 		enableGameTests = false
 		enableClientGameTests = true
 	}

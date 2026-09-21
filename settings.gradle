@@ -9,4 +9,4 @@ pluginManagement {
 	}
 }
 
-rootProject.name = 'SmoothZoom'
+rootProject.name = 'Loupe'

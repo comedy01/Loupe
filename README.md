@@ -1,8 +1,8 @@
-# Smooth Zoom
+# Loupe
 
 Hold a key to zoom in, scroll to zoom in or out, and let go to ease back out. The camera glides instead of snapping, so zooming feels natural and looking around while zoomed stays smooth.
 
-Smooth Zoom is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
+Loupe is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
 
 ## Features
 
@@ -17,16 +17,16 @@ Smooth Zoom is a small client-side Fabric mod for Minecraft, compatible with Mod
 ## Install
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 26.2.
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Smooth Zoom jar in your `mods` folder.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Loupe jar in your `mods` folder.
 3. Start the game.
 
-Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings screen (*Mods > Smooth Zoom > Configure*).
+Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings screen (*Mods > Loupe > Configure*).
 
 ## How to use
 
 Hold **C** while playing to zoom in. Scroll up to zoom closer, scroll down to zoom out, and release to go back to normal.
 
-To change the key, go to *Options > Controls > Key Binds > Smooth Zoom*. You can pick any keyboard key or mouse button. Unbind it to turn zooming off.
+To change the key, go to *Options > Controls > Key Binds > Loupe*. You can pick any keyboard key or mouse button. Unbind it to turn zooming off.
 
 ## Settings
 
@@ -39,7 +39,7 @@ To change the key, go to *Options > Controls > Key Binds > Smooth Zoom*. You can
 
 With Mod Menu, changes apply straight away and are saved when you close the screen. The screen also has a shortcut to the key setting and a *Reset to Defaults* button.
 
-Without Mod Menu you can edit `config/smoothzoom.json` in your game folder and restart the game:
+Without Mod Menu you can edit `config/loupe.json` in your game folder and restart the game:
 
 ```json
 {
@@ -50,7 +50,7 @@ Without Mod Menu you can edit `config/smoothzoom.json` in your game folder and r
 }
 ```
 
-Values that are out of range are corrected automatically. If the file is broken, the game still starts with the defaults and your old file is kept as `smoothzoom.json.broken`.
+Values that are out of range are corrected automatically. If the file is broken, the game still starts with the defaults and your old file is kept as `loupe.json.broken`.
 
 ## FAQ
 
@@ -61,7 +61,7 @@ No. Your FOV setting is never touched.
 Change *Look Smoothing*. Lower it for a more direct feel, or set it to Off to follow the mouse exactly like vanilla.
 
 **I use Minecraft's Cinematic Camera option.**
-Smooth Zoom leaves look smoothing off in that case, since the game is already smoothing the camera.
+Loupe leaves look smoothing off in that case, since the game is already smoothing the camera.
 
 ## License
 

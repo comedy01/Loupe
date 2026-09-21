@@ -1,18 +1,18 @@
 {
 	"schemaVersion": 1,
-	"id": "smoothzoom-test",
+	"id": "loupe-test",
 	"version": "1.0.0",
-	"name": "Smooth Zoom in-game tests",
-	"description": "Development-only client game tests for Smooth Zoom. Not shipped.",
+	"name": "Loupe in-game tests",
+	"description": "Development-only client game tests for Loupe. Not shipped.",
 	"license": "MIT",
 	"environment": "client",
 	"entrypoints": {
 		"fabric-client-gametest": [
-			"dev.smoothzoom.gametest.SmoothZoomClientGameTest"
+			"dev.loupe.gametest.LoupeClientGameTest"
 		]
 	},
 	"depends": {
-		"smoothzoom": "*",
+		"loupe": "*",
 		"fabric-client-gametest-api-v1": "*"
 	}
 }
