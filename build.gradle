@@ -1,32 +1,42 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
 	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
+	id 'net.neoforged.moddev' version "${moddev_version}" apply false
 }
 
+def loader = project.property("loader")
 def minecraftVersion = project.minecraft_version
-def remap = minecraftVersion.startsWith("1.")
+def neoforge = loader == "neoforge"
+def remap = !neoforge && minecraftVersion.startsWith("1.")
 
 def versionProps = new Properties()
-file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
+def propsFile = neoforge ? file("versions/neoforge/${minecraftVersion}.properties") : file("versions/${minecraftVersion}.properties")
+propsFile.withInputStream { versionProps.load(it) }
 
 def packs = versionProps.getProperty("packs").split(",")
 def label = versionProps.getProperty("label")
-def minecraftRange = versionProps.getProperty("range")
-def keyModule = versionProps.getProperty("key_module")
 def javaVersion = versionProps.getProperty("java").toInteger()
-def fabricApiVersion = versionProps.getProperty("fabric_api_version")
-def modmenuVersion = versionProps.getProperty("modmenu_version")
-def gametest = versionProps.getProperty("gametest", "true") == "true"
+def gametest = !neoforge && versionProps.getProperty("gametest", "true") == "true"
 
-apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
+def expansions = [java_version: javaVersion]
+versionProps.stringPropertyNames().each { expansions[it] = versionProps.getProperty(it) }
+
+if (neoforge) {
+	apply plugin: 'net.neoforged.moddev'
+} else {
+	apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
+}
 
 version = "${project.mod_version}+mc${label}"
+expansions.version = project.version
 group = project.maven_group
 
 base {
-	archivesName = project.archives_base_name
+	archivesName = neoforge ? "${project.archives_base_name}-neoforge" : project.archives_base_name
 }
 
+sourceSets.main.java.srcDir "src/loader/${loader}/java"
+sourceSets.main.resources.srcDir "src/loader/${loader}/resources"
 packs.each { pack ->
 	sourceSets.main.java.srcDir "src/compat/${pack}/java"
 }
@@ -46,21 +56,52 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${minecraftVersion}"
-
-	if (remap) {
+	if (neoforge) {
+		testImplementation "com.google.code.gson:gson:2.11.0"
+		testImplementation "org.slf4j:slf4j-api:2.0.16"
+	} else if (remap) {
+		minecraft "com.mojang:minecraft:${minecraftVersion}"
 		mappings loom.officialMojangMappings()
 		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-		modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
-		modCompileOnly "com.terraformersmc:modmenu:${modmenuVersion}"
+		modImplementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
+		modCompileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
 	} else {
+		minecraft "com.mojang:minecraft:${minecraftVersion}"
 		implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-		implementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
-		compileOnly "com.terraformersmc:modmenu:${modmenuVersion}"
+		implementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
+		compileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
 	}
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+if (neoforge) {
+	sourceSets {
+		nftest
+	}
+
+	dependencies {
+		nftestImplementation sourceSets.main.output
+	}
+
+	neoForge {
+		version = versionProps.getProperty("neoforge_version")
+		addModdingDependenciesTo(sourceSets.nftest)
+		runs {
+			client {
+				client()
+			}
+		}
+		mods {
+			loupe {
+				sourceSet sourceSets.main
+			}
+			loupe_test {
+				sourceSet sourceSets.nftest
+			}
+		}
+	}
 }
 
 test {
@@ -68,13 +109,10 @@ test {
 }
 
 processResources {
-	def version = project.version
-	inputs.property "version", version
-	inputs.property "minecraftRange", minecraftRange
-	inputs.property "keyModule", keyModule
+	inputs.properties(expansions)
 
-	filesMatching(["fabric.mod.json", "loupe.mixins.json"]) {
-		expand "version": version, "minecraft_range": minecraftRange, "key_module": keyModule, "java_version": javaVersion
+	filesMatching(["fabric.mod.json", "loupe.mixins.json", "META-INF/neoforge.mods.toml"]) {
+		expand expansions
 	}
 }
 

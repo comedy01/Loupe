@@ -17,10 +17,10 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"dev.loupe.client.LoupeClient"
+			"dev.loupe.fabric.LoupeFabric"
 		],
 		"modmenu": [
-			"dev.loupe.compat.LoupeModMenu"
+			"dev.loupe.fabric.LoupeModMenu"
 		]
 	},
 	"mixins": [
@@ -28,7 +28,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",
-		"minecraft": "${minecraft_range}",
+		"minecraft": "${range}",
 		"java": ">=${java_version}",
 		"${key_module}": "*"
 	},

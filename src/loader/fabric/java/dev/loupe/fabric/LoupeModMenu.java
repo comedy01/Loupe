@@ -1,4 +1,4 @@
-package dev.loupe.compat;
+package dev.loupe.fabric;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;

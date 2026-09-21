@@ -2,9 +2,9 @@
 
 Hold a key to zoom in, scroll to zoom in or out, and let go to ease back out. The camera glides instead of snapping, so zooming feels natural and looking around while zoomed stays smooth.
 
-Loupe is a small client-side Fabric mod for Minecraft, compatible with Mod Menu.
+Loupe is a small client-side mod for Minecraft on Fabric and NeoForge.
 
-Supported versions: 1.21 to 1.21.11 and 26.1 to 26.3.
+Supported versions: 1.21 to 1.21.11 and 26.1 to 26.3, on both loaders.
 
 ## Features
 
@@ -18,17 +18,25 @@ Supported versions: 1.21 to 1.21.11 and 26.1 to 26.3.
 
 ## Install
 
+**Fabric**
+
 1. Install [Fabric Loader](https://fabricmc.net/use/) for your version of Minecraft.
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Loupe jar for your version in your `mods` folder.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the Fabric Loupe jar for your version in your `mods` folder.
 3. Start the game.
 
 Optional: add [Mod Menu](https://modrinth.com/mod/modmenu) to get a settings screen (*Mods > Loupe > Configure*).
+
+**NeoForge**
+
+1. Install [NeoForge](https://neoforged.net/) for your version of Minecraft.
+2. Put the NeoForge Loupe jar for your version in your `mods` folder.
+3. Start the game. The settings screen is in *Mods > Loupe > Config*.
 
 ## How to use
 
 Hold **C** while playing to zoom in. Scroll up to zoom closer, scroll down to zoom out, and release to go back to normal.
 
-On Minecraft 1.21 to 1.21.8 the default key is **Z** instead, because C is already used by the creative toolbar there.
+On Fabric with Minecraft 1.21 to 1.21.8 the default key is **Z** instead, because C is already used by the creative toolbar there.
 
 To change the key, go to *Options > Controls > Key Binds > Loupe*. You can pick any keyboard key or mouse button. Unbind it to turn zooming off.
 
@@ -41,9 +49,9 @@ To change the key, go to *Options > Controls > Key Binds > Loupe*. You can pick 
 | Look Smoothing | Off - 100% | 60% | How much the camera glides while you look around zoomed in. Off follows the mouse directly |
 | Scroll to Zoom | on / off | on | Whether the mouse wheel changes the zoom while you hold the key |
 
-With Mod Menu, changes apply straight away and are saved when you close the screen. The screen also has a shortcut to the key setting and a *Reset to Defaults* button.
+With the settings screen (Mod Menu on Fabric, the Mods list on NeoForge), changes apply straight away and are saved when you close the screen. The screen also has a shortcut to the key setting and a *Reset to Defaults* button.
 
-Without Mod Menu you can edit `config/loupe.json` in your game folder and restart the game:
+Without the settings screen you can edit `config/loupe.json` in your game folder and restart the game:
 
 ```json
 {

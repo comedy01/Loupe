@@ -2,24 +2,32 @@ package dev.loupe.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.loupe.config.ZoomConfig;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 
 import java.nio.file.Path;
 
-public final class LoupeClient implements ClientModInitializer {
+public final class LoupeClient {
     public static final String MOD_ID = "loupe";
 
     private static ZoomConfig config = new ZoomConfig();
     private static KeyMapping zoomKey;
+    private static Path configPath;
 
-    @Override
-    public void onInitializeClient() {
-        config = ZoomConfig.load(configPath());
+    private LoupeClient() {
+    }
 
+    public static void init(Path configDir) {
+        configPath = configDir.resolve(ZoomConfig.FILE_NAME);
+        config = ZoomConfig.load(configPath);
+    }
+
+    public static KeyMapping createKey() {
         int defaultKey = InputConstants.getKey(DefaultKey.NAME).getValue();
-        zoomKey = KeyRegistrar.register(KeyFactory.create("key.loupe.zoom", defaultKey));
+        return KeyFactory.create("key.loupe.zoom", defaultKey);
+    }
+
+    public static void setZoomKey(KeyMapping key) {
+        zoomKey = key;
     }
 
     public static ZoomConfig config() {
@@ -31,10 +39,10 @@ public final class LoupeClient implements ClientModInitializer {
     }
 
     public static Path configPath() {
-        return FabricLoader.getInstance().getConfigDir().resolve(ZoomConfig.FILE_NAME);
+        return configPath;
     }
 
     public static void saveConfig() {
-        config.saveQuietly(configPath());
+        config.saveQuietly(configPath);
     }
 }
