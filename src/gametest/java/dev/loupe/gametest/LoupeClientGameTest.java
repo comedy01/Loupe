@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.TestInput;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -203,6 +204,15 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         check(config.scrollToZoom(), "reset did not restore scroll-to-zoom");
         log("screenshot: " + context.takeScreenshot("loupe-settings-after-reset"));
 
+        int amountSliders = context.computeOnClient(client -> countSliders(GameScreens.current(client), "Zoom Amount"));
+        check(amountSliders == 1, "reset left " + amountSliders + " zoom amount sliders on the screen");
+        dragSliderToMax(context, "Zoom Amount");
+        context.waitTicks(5);
+        check(config.zoomAmount() == ZoomMath.MAX_AMOUNT, "dragging the zoom amount slider after reset did not change the config");
+        String amountShown = context.computeOnClient(client ->
+                findSlider(GameScreens.current(client), "Zoom Amount").getMessage().getString());
+        check(amountShown.contains("10.00x"), "the zoom amount slider did not move after reset: " + amountShown);
+
         config.setZoomAmount(6.5);
         context.setScreen(() -> null);
         context.waitTicks(5);
@@ -295,6 +305,47 @@ public class LoupeClientGameTest implements FabricClientGameTest {
         context.getInput().setCursorPos(center[0], center[1]);
         context.waitTick();
         context.getInput().pressMouse(code("key.mouse.left"));
+    }
+
+    private static void dragSliderToMax(ClientGameTestContext context, String captionText) {
+        double[] bounds = context.computeOnClient(client -> {
+            AbstractSliderButton slider = findSlider(GameScreens.current(client), captionText);
+            if (slider == null) {
+                throw new AssertionError("no slider '" + captionText + "' on the current screen");
+            }
+            double scale = client.getWindow().getGuiScale();
+            return new double[] {
+                    (slider.getX() + slider.getWidth() - 2.0) * scale,
+                    (slider.getY() + slider.getHeight() / 2.0) * scale};
+        });
+        context.getInput().setCursorPos(bounds[0], bounds[1]);
+        context.waitTick();
+        context.getInput().pressMouse(code("key.mouse.left"));
+    }
+
+    private static AbstractSliderButton findSlider(GuiEventListener node, String captionText) {
+        if (node instanceof AbstractSliderButton slider && slider.getMessage().getString().contains(captionText)) {
+            return slider;
+        }
+        if (node instanceof ContainerEventHandler container) {
+            for (GuiEventListener child : container.children()) {
+                AbstractSliderButton found = findSlider(child, captionText);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static int countSliders(GuiEventListener node, String captionText) {
+        int count = node instanceof AbstractSliderButton slider && slider.getMessage().getString().contains(captionText) ? 1 : 0;
+        if (node instanceof ContainerEventHandler container) {
+            for (GuiEventListener child : container.children()) {
+                count += countSliders(child, captionText);
+            }
+        }
+        return count;
     }
 
     private static Button findButton(GuiEventListener node, String translationKey) {

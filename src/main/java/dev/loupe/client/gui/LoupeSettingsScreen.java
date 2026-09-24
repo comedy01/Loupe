@@ -105,7 +105,7 @@ public final class LoupeSettingsScreen extends OptionsSubScreen {
     private AbstractWidget resetButton(ZoomConfig config) {
         return Button.builder(Component.translatable("loupe.options.reset"), button -> {
                     config.resetToDefaults();
-                    rebuildWidgets();
+                    GameScreens.open(minecraft, new LoupeSettingsScreen(lastScreen, options));
                 })
                 .width(WIDTH)
                 .build();
