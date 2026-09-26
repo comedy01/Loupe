@@ -2,28 +2,33 @@ plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
 	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
 	id 'net.neoforged.moddev' version "${moddev_version}" apply false
+	id 'net.neoforged.moddev.legacyforge' version "${moddev_version}" apply false
 }
 
 def loader = project.property("loader")
 def minecraftVersion = project.minecraft_version
+def fabric = loader == "fabric"
 def neoforge = loader == "neoforge"
-def remap = !neoforge && minecraftVersion.startsWith("1.")
+def forge = loader == "forge"
+def remap = fabric && minecraftVersion.startsWith("1.")
 
 def versionProps = new Properties()
-def propsFile = neoforge ? file("versions/neoforge/${minecraftVersion}.properties") : file("versions/${minecraftVersion}.properties")
+def propsFile = fabric ? file("versions/${minecraftVersion}.properties") : file("versions/${loader}/${minecraftVersion}.properties")
 propsFile.withInputStream { versionProps.load(it) }
 
 def gameVersion = versionProps.getProperty("minecraft", minecraftVersion)
 def packs = versionProps.getProperty("packs").split(",")
 def label = versionProps.getProperty("label")
 def javaVersion = versionProps.getProperty("java").toInteger()
-def gametest = !neoforge && versionProps.getProperty("gametest", "true") == "true"
+def gametest = fabric && versionProps.getProperty("gametest", "true") == "true"
 
 def expansions = [java_version: javaVersion]
 versionProps.stringPropertyNames().each { expansions[it] = versionProps.getProperty(it) }
 
 if (neoforge) {
 	apply plugin: 'net.neoforged.moddev'
+} else if (forge) {
+	apply plugin: 'net.neoforged.moddev.legacyforge'
 } else {
 	apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
 }
@@ -33,13 +38,21 @@ expansions.version = project.version
 group = project.maven_group
 
 base {
-	archivesName = neoforge ? "${project.archives_base_name}-neoforge" : project.archives_base_name
+	archivesName = fabric ? project.archives_base_name : "${project.archives_base_name}-${loader}"
 }
 
 sourceSets.main.java.srcDir "src/loader/${loader}/java"
 sourceSets.main.resources.srcDir "src/loader/${loader}/resources"
 packs.each { pack ->
 	sourceSets.main.java.srcDir "src/compat/${pack}/java"
+}
+if (fabric || forge) {
+	sourceSets {
+		selftest {
+			java.srcDirs "src/selftest/common/java", "src/selftest/${loader}/java"
+			resources.srcDir "src/selftest/${loader}/resources"
+		}
+	}
 }
 sourceSets.configureEach {
 	if (gametest && it.name == "gametest") {
@@ -57,16 +70,25 @@ repositories {
 }
 
 dependencies {
-	if (neoforge) {
+	if (neoforge || forge) {
 		testImplementation "com.google.code.gson:gson:2.11.0"
 		testImplementation "org.slf4j:slf4j-api:2.0.16"
+	}
+	if (forge) {
+		annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+		compileOnly "io.github.llamalad7:mixinextras-common:${versionProps.getProperty('mixinextras_version')}"
+		annotationProcessor "io.github.llamalad7:mixinextras-common:${versionProps.getProperty('mixinextras_version')}"
+		implementation "io.github.llamalad7:mixinextras-forge:${versionProps.getProperty('mixinextras_version')}"
+		jarJar "io.github.llamalad7:mixinextras-forge:${versionProps.getProperty('mixinextras_version')}"
 	} else if (remap) {
 		minecraft "com.mojang:minecraft:${gameVersion}"
 		mappings loom.officialMojangMappings()
 		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 		modImplementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
-		modCompileOnly "com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}"
-	} else {
+		modCompileOnly("com.terraformersmc:modmenu:${versionProps.getProperty('modmenu_version')}") {
+			transitive = false
+		}
+	} else if (fabric) {
 		minecraft "com.mojang:minecraft:${gameVersion}"
 		implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 		implementation "net.fabricmc.fabric-api:fabric-api:${versionProps.getProperty('fabric_api_version')}"
@@ -105,6 +127,66 @@ if (neoforge) {
 	}
 }
 
+if (forge) {
+	dependencies {
+		selftestImplementation sourceSets.main.output
+	}
+
+	legacyForge {
+		version = versionProps.getProperty("forge_version")
+		addModdingDependenciesTo(sourceSets.selftest)
+		runs {
+			client {
+				client()
+			}
+			selftest {
+				client()
+				sourceSet = sourceSets.selftest
+			}
+		}
+		mods {
+			loupe {
+				sourceSet sourceSets.main
+			}
+			loupe_selftest {
+				sourceSet sourceSets.selftest
+			}
+		}
+	}
+
+	mixin {
+		add sourceSets.main, "loupe.refmap.json"
+		config "loupe.mixins.json"
+	}
+
+	jar {
+		manifest.attributes("MixinConfigs": "loupe.mixins.json")
+	}
+}
+
+// Launch check for versions without a client gametest: ./gradlew runSelftest -Pminecraft_version=1.20.1 [-Ploader=forge]
+if (fabric) {
+	sourceSets.selftest.compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+	sourceSets.selftest.runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+
+	loom {
+		mods {
+			loupe {
+				sourceSet sourceSets.main
+			}
+			loupe_selftest {
+				sourceSet sourceSets.selftest
+			}
+		}
+		runs {
+			selftest {
+				client()
+				source sourceSets.selftest
+			}
+		}
+	}
+}
+
 test {
 	useJUnitPlatform()
 }
@@ -112,8 +194,14 @@ test {
 processResources {
 	inputs.properties(expansions)
 
-	filesMatching(["fabric.mod.json", "loupe.mixins.json", "META-INF/neoforge.mods.toml"]) {
+	filesMatching(["fabric.mod.json", "loupe.mixins.json", "META-INF/neoforge.mods.toml", "META-INF/mods.toml"]) {
 		expand expansions
+	}
+	if (forge) {
+		filesMatching("loupe.mixins.json") {
+			filter { line -> line.contains('"package"') ? line + '
+	"refmap": "loupe.refmap.json",' : line }
+		}
 	}
 }
 

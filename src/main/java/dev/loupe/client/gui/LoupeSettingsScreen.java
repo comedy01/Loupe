@@ -11,16 +11,13 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.options.OptionsSubScreen;
-import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleFunction;
 
-public final class LoupeSettingsScreen extends OptionsSubScreen {
+public final class LoupeSettingsScreen extends LoupeOptionsScreen {
     private static final int WIDTH = 150;
     private static final int HEIGHT = 20;
 
@@ -64,9 +61,9 @@ public final class LoupeSettingsScreen extends OptionsSubScreen {
                         : String.format(Locale.ROOT, "%.0f%%", value * 100.0),
                 config::setLookSmoothing);
 
-        list.addSmall(List.of(amount, speed));
-        list.addSmall(List.of(look, scrollButton(config)));
-        list.addSmall(List.of(keyButton(), resetButton(config)));
+        addRow(amount, speed);
+        addRow(look, scrollButton(config));
+        addRow(keyButton(), resetButton(config));
     }
 
     @Override
@@ -95,7 +92,7 @@ public final class LoupeSettingsScreen extends OptionsSubScreen {
         Component label = key == null
                 ? Component.translatable("loupe.options.key.unavailable")
                 : Component.translatable("loupe.options.key", key.getTranslatedKeyMessage());
-        Button button = Button.builder(label, pressed -> GameScreens.open(minecraft, new KeyBindsScreen(this, options)))
+        Button button = Button.builder(label, pressed -> GameScreens.open(minecraft, KeyBinds.screen(this, options)))
                 .width(WIDTH)
                 .build();
         button.active = key != null;
