@@ -1,0 +1,8 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="loupe_selftest"
+version="1.0.0"
+displayName="Loupe self test"

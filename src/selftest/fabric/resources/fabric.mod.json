@@ -1,0 +1,17 @@
+{
+	"schemaVersion": 1,
+	"id": "loupe-selftest",
+	"version": "1.0.0",
+	"name": "Loupe self test",
+	"description": "Development-only launch checks for Loupe. Not shipped.",
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.loupe.selftest.fabric.LoupeSelfTestFabric"
+		]
+	},
+	"depends": {
+		"loupe": "*"
+	}
+}
